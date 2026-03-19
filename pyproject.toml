@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alfa-proof-repo"
+version = "0.1.0"
+description = "Public proof repository for the ALFA control layer over LLMs."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Karen86Tonoyan" }]
+license = { file = "LICENSE" }
+keywords = ["llm", "guardrails", "voice", "policy-engine", "source-available"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "License :: Other/Proprietary License",
+  "Operating System :: OS Independent"
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

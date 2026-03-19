@@ -1,0 +1,45 @@
+ALFA Proof Repository Source-Available License v1.0
+
+Copyright (c) 2026 Karen86Tonoyan. All rights reserved.
+
+This repository is source-available. It is not open source.
+
+1. Permitted use
+
+You may:
+- view, clone, and inspect the repository;
+- run the demo and test suite for evaluation;
+- modify the code internally for evaluation, research, or due diligence;
+- reference short excerpts for discussion or review with clear attribution.
+
+2. Prohibited use without prior written permission
+
+You may not:
+- use the repository, in whole or in substantial part, for commercial production;
+- offer it as a hosted service, managed service, or embedded product;
+- redistribute, sublicense, sell, lease, or publish modified or unmodified copies;
+- use the code or documentation to train models or create competing products derived from the protected core;
+- remove or alter copyright, attribution, or trademark notices.
+
+3. Intellectual property
+
+All copyright, trade secrets, trademarks, product positioning, and protected know-how remain the property of Karen86Tonoyan unless a separate written agreement states otherwise.
+
+The names `ALFA`, `Cerber`, and `Tonoyana` may be protected as product, service, or trademark identifiers. This license grants no trademark rights.
+
+4. Partner access
+
+Selected modules, connectors, operational policies, and execution internals may be made available under separate B2B or commercial agreements. Access to this public repository does not grant access to those private components.
+
+5. Contributions
+
+Unsolicited code contributions are not accepted unless explicitly requested in writing. Any accepted contribution is governed by a separate written agreement.
+
+6. Warranty and liability
+
+The repository is provided "as is", without warranties or conditions of any kind. To the fullest extent permitted by law, the author disclaims liability for any claim, damages, or other liability arising from use of this repository.
+
+7. Contact
+
+For licensing, commercial collaboration, or partner access, contact the repository owner through an approved business channel.
+
