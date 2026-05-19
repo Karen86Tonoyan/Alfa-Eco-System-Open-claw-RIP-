@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from alfa.guard.epistemic_gate import EpistemicGate, PassthroughEpistemicGate
 from alfa.plugins.base import PluginSpec
 from alfa.shared.policies import DEFAULT_PLUGIN_POLICIES
 from alfa.shared.schemas import (
@@ -18,14 +19,36 @@ RISK_ORDER = {
     RiskLevel.BLOCK: 3,
 }
 
+_RISK_FLOAT = {
+    RiskLevel.SAFE:   0.0,
+    RiskLevel.REVIEW: 0.35,
+    RiskLevel.HIGH:   0.7,
+    RiskLevel.BLOCK:  1.0,
+}
+
 
 class CerberGuard:
     """
-    Public preview of the Cerber execution gate.
+    Cerber two-gate execution guard.
 
-    The production enforcement core is stricter and private. This layer
-    exposes the public control idea: the model proposes, Cerber approves or blocks.
+    Gate 1 — pattern layer (this class): intent, risk level, plugin policy,
+              trust origin, confirmation flag.
+    Gate 2 — epistemic layer (injected EpistemicGate): claim evidence basis,
+              corroboration, domain policy.  Defaults to PassthroughEpistemicGate
+              when no backend is wired in.
+
+    Usage with epistemic backend::
+
+        from alfa.guard.cerber import CerberGuard
+        guard = CerberGuard(epistemic_gate=AlfaEOSAdapter())
+
+    Without backend (public proof mode)::
+
+        guard = CerberGuard()   # passthrough — Gate 2 always grants
     """
+
+    def __init__(self, epistemic_gate: EpistemicGate | None = None) -> None:
+        self._epistemic_gate: EpistemicGate = epistemic_gate or PassthroughEpistemicGate()
 
     def authorize(
         self,
@@ -109,10 +132,33 @@ class CerberGuard:
                 degradation_level="D2_restricted_mode",
             )
 
+        # Gate 2 — epistemic layer
+        cerber_risk_float = _RISK_FLOAT[decision.policy.risk]
+        verdict = self._epistemic_gate.evaluate(
+            request_text=request.text,
+            plugin_name=plugin.name,
+            cerber_risk_score=cerber_risk_float,
+            context={
+                "session_id": request.session_id,
+                "user_id": request.user_id,
+                "source_trust": request.source_trust,
+                "mission": request.mission,
+            },
+        )
+        if not verdict.granted:
+            return GuardDecision(
+                allowed=False,
+                mode=ResponseMode.ESCALATE,
+                reason=f"Epistemic gate denied: {verdict.reason}",
+                approved_plugin=plugin.name,
+                requires_confirmation=True,
+                degradation_level="D2_restricted_mode",
+            )
+
         return GuardDecision(
             allowed=True,
             mode=decision.policy.response_mode,
-            reason="Guard approved request within public preview policy.",
+            reason="Guard approved — pattern gate + epistemic gate passed.",
             approved_plugin=plugin.name,
         )
 

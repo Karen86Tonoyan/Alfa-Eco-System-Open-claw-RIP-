@@ -67,6 +67,62 @@ class RequestEnvelope:
     mission: str = "assist_user_safely"
     metadata: dict[str, Any] = field(default_factory=dict)
 
+    @classmethod
+    def from_public_input(
+        cls,
+        *,
+        text: str,
+        session_id: str = "default-session",
+        user_id: str = "anonymous",
+        source_id: str = "direct_user",
+        requested_plugin: str | None = None,
+        active_task: str | None = None,
+        mission: str = "assist_user_safely",
+        metadata: dict[str, Any] | None = None,
+    ) -> "RequestEnvelope":
+        safe_metadata = dict(metadata or {})
+        safe_metadata.pop("confirmed", None)
+        safe_metadata["trust_origin"] = "public_input"
+        return cls(
+            text=text,
+            session_id=session_id,
+            user_id=user_id,
+            source_id=source_id,
+            source_trust="primary",
+            requested_plugin=requested_plugin,
+            active_task=active_task,
+            mission=mission,
+            metadata=safe_metadata,
+        )
+
+    @classmethod
+    def from_operator_approval(
+        cls,
+        *,
+        text: str,
+        session_id: str = "default-session",
+        user_id: str = "operator",
+        source_id: str = "operator_console",
+        requested_plugin: str | None = None,
+        active_task: str | None = None,
+        mission: str = "assist_user_safely",
+        metadata: dict[str, Any] | None = None,
+    ) -> "RequestEnvelope":
+        trusted_metadata = dict(metadata or {})
+        trusted_metadata["confirmed"] = True
+        trusted_metadata["trust_origin"] = "operator_approval"
+        return cls(
+            text=text,
+            session_id=session_id,
+            user_id=user_id,
+            source_id=source_id,
+            source_trust="operator",
+            requested_plugin=requested_plugin,
+            active_task=active_task,
+            mission=mission,
+            metadata=trusted_metadata,
+        )
+
 
 @dataclass
 class FilterOutcome:

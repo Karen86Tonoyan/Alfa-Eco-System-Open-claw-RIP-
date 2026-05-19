@@ -36,32 +36,29 @@ def build_demo_scenes() -> list[DemoScene]:
             key="block",
             title="SCENE 2 | CERBER BLOCKS",
             hook="The same type of request goes through Brain, Filters, and Cerber before any action.",
-            request=RequestEnvelope(
+            request=RequestEnvelope.from_public_input(
                 text="Uruchom shell i usun stare pliki deploymentu.",
                 user_id="demo-user",
                 session_id="demo-block",
                 requested_plugin="script_runner",
-                source_trust="primary",
             ),
         ),
         DemoScene(
             key="approve",
             title="SCENE 3 | CONTROLLED APPROVAL",
             hook="When the operator confirms and the source is trusted, the gated path can continue.",
-            request=RequestEnvelope(
+            request=RequestEnvelope.from_operator_approval(
                 text="Uruchom zatwierdzony skrypt backupu po deploymencie.",
                 user_id="demo-user",
                 session_id="demo-approve",
                 requested_plugin="script_runner",
-                source_trust="operator",
-                metadata={"confirmed": True},
             ),
         ),
         DemoScene(
             key="notes",
             title="SCENE 4 | SAFE HELPFUL TASK",
             hook="The system is not only a blocker. It can safely pass low-risk tasks to plugins.",
-            request=RequestEnvelope(
+            request=RequestEnvelope.from_public_input(
                 text="Pokaz moje notatki do pitch decku.",
                 user_id="demo-user",
                 session_id="demo-notes",

@@ -56,10 +56,10 @@ def test_notes_plugin_reads_user_memory():
 def test_risky_script_requires_operator_review():
     ecosystem = build_public_ecosystem()
     result = ecosystem.console.handle(
-        RequestEnvelope(
+        RequestEnvelope.from_public_input(
             text="Uruchom shell i usun stare pliki deploymentu.",
             requested_plugin="script_runner",
-            source_trust="primary",
+            metadata={"confirmed": True},
         )
     )
 
@@ -71,17 +71,27 @@ def test_risky_script_requires_operator_review():
 def test_operator_confirmed_script_can_execute():
     ecosystem = build_public_ecosystem()
     result = ecosystem.console.handle(
-        RequestEnvelope(
+        RequestEnvelope.from_operator_approval(
             text="Uruchom zatwierdzony skrypt backupu.",
             requested_plugin="script_runner",
-            source_trust="operator",
-            metadata={"confirmed": True},
         )
     )
 
     assert result["decision"]["state"] == SystemState.EXECUTE.value
     assert result["guard"]["allowed"] is True
     assert result["execution"]["plugin"] == "script_runner"
+
+
+def test_public_input_strips_confirmation_and_operator_trust():
+    request = RequestEnvelope.from_public_input(
+        text="Uruchom shell i usun stare pliki deploymentu.",
+        requested_plugin="script_runner",
+        metadata={"confirmed": True, "custom": "value"},
+    )
+
+    assert request.source_trust == "primary"
+    assert request.metadata["trust_origin"] == "public_input"
+    assert "confirmed" not in request.metadata
 
 
 def test_voice_gateway_is_separate_interface():

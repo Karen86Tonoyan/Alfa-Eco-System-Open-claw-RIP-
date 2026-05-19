@@ -73,6 +73,7 @@ def test_process_tier3_escalate() -> None:
     orchestrator._aggregate_results = MagicMock(side_effect=[
         {"aggregated_score": 0.5, "confidence": 0.8, "hard_block": False, "timed_out_filters": []},
         {"aggregated_score": 0.6, "confidence": 0.8, "hard_block": False, "timed_out_filters": []},
+        {"aggregated_score": 0.6, "confidence": 0.8, "hard_block": False, "timed_out_filters": []},
     ])
     result = orchestrator.process(
         {
