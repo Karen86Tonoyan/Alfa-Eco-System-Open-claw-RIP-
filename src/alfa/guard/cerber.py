@@ -90,6 +90,24 @@ class CerberGuard:
                 degradation_level="D2_restricted_mode",
             )
 
+        # Verify the dispatched plugin matches what the request actually asked for.
+        # Mismatch means the routing layer substituted a different plugin — block it.
+        if (
+            request.requested_plugin is not None
+            and request.requested_plugin != plugin.name
+        ):
+            return GuardDecision(
+                allowed=False,
+                mode=ResponseMode.ESCALATE,
+                reason=(
+                    f"Plugin mismatch: request asked for '{request.requested_plugin}' "
+                    f"but guard received '{plugin.name}'."
+                ),
+                approved_plugin=plugin.name,
+                requires_confirmation=True,
+                degradation_level="D2_restricted_mode",
+            )
+
         policy = DEFAULT_PLUGIN_POLICIES.get(plugin.name)
         if policy is None:
             return GuardDecision(
