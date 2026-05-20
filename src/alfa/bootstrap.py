@@ -6,6 +6,7 @@ from .backends.registry import BackendRegistry, build_public_backend_registry
 from .console.service import ALFAConsole
 from .core.brain import ALFACoreBrain
 from .guard.cerber import CerberGuard
+from .guard.guardian import GuardianEpistemicGate
 from .memory.layer import MemoryLayer
 from .plugins.registry import PluginRegistry, build_builtin_registry
 from .voice.gateway import VoiceGateway
@@ -25,7 +26,7 @@ class ALFAEcosystem:
 def build_public_ecosystem() -> ALFAEcosystem:
     memory = MemoryLayer()
     plugins = build_builtin_registry()
-    guard = CerberGuard()
+    guard = CerberGuard(epistemic_gate=GuardianEpistemicGate())
     core = ALFACoreBrain()
     voice = VoiceGateway()
     backends = build_public_backend_registry()
