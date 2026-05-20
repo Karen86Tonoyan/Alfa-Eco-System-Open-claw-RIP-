@@ -185,8 +185,20 @@ class ALFADashboard:
 
     def _brain_summary(self) -> BrainSummary:
         bundles = self._memory.system_memory.get("guardian.brain.bundles", [])
-        evidence_nodes = sum(len(b.get("evidence_nodes", [])) for b in bundles)
-        verdict_nodes  = sum(len(b.get("verdict_nodes",  [])) for b in bundles)
+        evidence_nodes = 0
+        verdict_nodes = 0
+
+        for bundle in bundles:
+            nodes = bundle.get("nodes")
+            if isinstance(nodes, list):
+                evidence_nodes += sum(1 for node in nodes if node.get("node_type") == "evidence")
+                verdict_nodes += sum(1 for node in nodes if node.get("node_type") == "verdict")
+                continue
+
+            # Backward-compatible fallback for older hand-rolled snapshots.
+            evidence_nodes += len(bundle.get("evidence_nodes", []))
+            verdict_nodes += len(bundle.get("verdict_nodes", []))
+
         return BrainSummary(
             total_bundles=len(bundles),
             total_evidence_nodes=evidence_nodes,

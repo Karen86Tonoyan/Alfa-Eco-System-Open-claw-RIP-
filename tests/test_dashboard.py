@@ -8,7 +8,7 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from alfa.console.dashboard import ALFADashboard
-from alfa.guard.guardian import AuditStore, EvidenceGate
+from alfa.guard.guardian import AuditStore, BrainLinker, EvidenceGate
 from alfa.guard.lasuch import InjectionDetector, LasuchGuardianAdapter, SourceType
 from alfa.memory.layer import MemoryLayer
 
@@ -18,8 +18,9 @@ from tests.adversarial_payloads import PROMPT_INJECTION_PAYLOADS, SQL_INJECTION_
 def _populate(store: AuditStore, memory: MemoryLayer, *, n: int = 10) -> None:
     """Push n verdicts through the real pipeline into store."""
     detector = InjectionDetector()
-    adapter  = LasuchGuardianAdapter()
-    gate     = EvidenceGate()
+    adapter = LasuchGuardianAdapter()
+    gate = EvidenceGate()
+    linker = BrainLinker()
 
     payloads = list(SQL_INJECTION_PAYLOADS[:n // 2]) + list(PROMPT_INJECTION_PAYLOADS[:n // 2])
     for text in payloads:
@@ -29,15 +30,11 @@ def _populate(store: AuditStore, memory: MemoryLayer, *, n: int = 10) -> None:
             continue
         claim   = adapter.to_guardian_claim(packets)
         verdict = gate.consume(claim)
-        store.persist_verdict(verdict, source_hash=claim.source_hash, pattern_types=claim.packet_types)
+        record = store.persist_verdict(verdict, source_hash=claim.source_hash, pattern_types=claim.packet_types)
 
-        # Simulate brain bundle in memory
+        # Store the real graph bundle format produced by BrainLinker.
         bundles = list(memory.system_memory.get("guardian.brain.bundles", []))
-        bundles.append({
-            "threat_id":      verdict.claim_id,
-            "evidence_nodes": [{"id": e} for e in verdict.evidence_refs],
-            "verdict_nodes":  [{"status": verdict.status.value}],
-        })
+        bundles.append(linker.build_bundle(record).to_dict())
         memory.set_system_value("guardian.brain.bundles", bundles)
 
 
