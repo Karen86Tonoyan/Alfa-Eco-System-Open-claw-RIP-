@@ -2,13 +2,19 @@
 
 from .cerber import CerberGuard
 from .guardian import (
+    AuditStore,
+    BrainEvidenceBundle,
+    BrainLinker,
     ClaimStatus,
     EvidenceEntry,
     EvidenceGate,
     EvidenceGateConfig,
     EvidenceVerdict,
     EvidenceVerdictToCerber,
+    GraphEdge,
+    GraphNode,
     GuardianEpistemicGate,
+    StoredVerdictRecord,
 )
 from .lasuch import (
     GuardianClaimInput,
@@ -25,6 +31,9 @@ from .lasuch import (
 )
 
 __all__ = [
+    "AuditStore",
+    "BrainEvidenceBundle",
+    "BrainLinker",
     "CerberGuard",
     "ClaimStatus",
     "EvidenceEntry",
@@ -32,11 +41,14 @@ __all__ = [
     "EvidenceGateConfig",
     "EvidenceVerdict",
     "EvidenceVerdictToCerber",
+    "GraphEdge",
+    "GraphNode",
     "GuardianClaimInput",
     "GuardianEpistemicGate",
     "InjectionDetector",
     "LasuchGuardianAdapter",
     "QuarantineState",
+    "StoredVerdictRecord",
     "SourceType",
     "ThreatPacket",
     "ThreatPacketValidationError",
