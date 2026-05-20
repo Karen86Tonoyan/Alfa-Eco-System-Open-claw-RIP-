@@ -6,7 +6,7 @@ from typing import Any
 from alfa.guard.epistemic_gate import EpistemicVerdict
 from alfa.guard.guardian.evidence_gate import EvidenceGate
 from alfa.guard.guardian.types import ClaimStatus, EvidenceVerdict
-from alfa.guard.lasuch.adapters.guardian_input import LasuchGuardianAdapter
+from alfa.guard.lasuch.adapters.guardian_input import GuardianClaimInput, LasuchGuardianAdapter
 from alfa.guard.lasuch.detector import InjectionDetector
 from alfa.guard.lasuch.types import SourceType
 
@@ -69,6 +69,8 @@ class GuardianEpistemicGate:
         self._evidence_gate = evidence_gate or EvidenceGate()
         self._verdict_adapter = verdict_adapter or EvidenceVerdictToCerber()
         self.last_envelope: CerberEvidenceEnvelope | None = None
+        self.last_claim: GuardianClaimInput | None = None
+        self.last_evidence_verdict: EvidenceVerdict | None = None
 
     def evaluate(
         self,
@@ -96,6 +98,8 @@ class GuardianEpistemicGate:
             language_hint=language_hint,
         )
         if not packets:
+            self.last_claim = None
+            self.last_evidence_verdict = None
             self.last_envelope = CerberEvidenceEnvelope(
                 verdict=EpistemicVerdict.allow(
                     risk_score=cerber_risk_score,
@@ -108,6 +112,8 @@ class GuardianEpistemicGate:
 
         claim = self._claim_adapter.to_guardian_claim(packets)
         evidence_verdict = self._evidence_gate.consume(claim)
+        self.last_claim = claim
+        self.last_evidence_verdict = evidence_verdict
         envelope = self._verdict_adapter.convert(evidence_verdict)
 
         bridged_risk = max(cerber_risk_score, envelope.verdict.risk_score)

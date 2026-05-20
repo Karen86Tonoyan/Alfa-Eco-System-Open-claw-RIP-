@@ -4,6 +4,7 @@ from typing import Any
 
 from alfa.core.brain import ALFACoreBrain
 from alfa.guard.cerber import CerberGuard
+from alfa.guard.guardian import AuditStore, BrainLinker, GuardianEpistemicGate
 from alfa.memory.layer import MemoryLayer
 from alfa.plugins.registry import PluginRegistry
 from alfa.shared.events import AuditEventType
@@ -20,11 +21,15 @@ class ALFAConsole:
         guard: CerberGuard,
         plugins: PluginRegistry,
         memory: MemoryLayer,
+        audit_store: AuditStore | None = None,
+        brain_linker: BrainLinker | None = None,
     ):
         self.core = core
         self.guard = guard
         self.plugins = plugins
         self.memory = memory
+        self.audit_store = audit_store or AuditStore(memory=memory)
+        self.brain_linker = brain_linker or BrainLinker()
 
     def handle(self, request: RequestEnvelope) -> dict[str, Any]:
         self.memory.append_audit(
@@ -60,6 +65,7 @@ class ALFAConsole:
             source_id=request.source_id,
             detail=guard.to_dict(),
         )
+        self._archive_guardian_evidence()
 
         execution_result: dict[str, Any] | None = None
         if guard.allowed and guard.approved_plugin and guard.mode in {
@@ -120,3 +126,20 @@ class ALFAConsole:
         if guard.mode is ResponseMode.EXECUTE:
             return "Akcja zostala dopuszczona do wykonania przez plugin."
         return "Zapytanie moze trafic do glownego modelu."
+
+    def _archive_guardian_evidence(self) -> None:
+        gate = getattr(self.guard, "_epistemic_gate", None)
+        if not isinstance(gate, GuardianEpistemicGate):
+            return
+        if gate.last_claim is None or gate.last_evidence_verdict is None:
+            return
+
+        record = self.audit_store.persist_verdict(
+            gate.last_evidence_verdict,
+            source_hash=gate.last_claim.source_hash,
+            pattern_types=gate.last_claim.packet_types,
+        )
+        bundle = self.brain_linker.build_bundle(record)
+        bundles = list(self.memory.system_memory.get("guardian.brain.bundles", []))
+        bundles.append(bundle.to_dict())
+        self.memory.set_system_value("guardian.brain.bundles", bundles)
