@@ -118,11 +118,23 @@ PATTERN_REGISTRY: tuple[InjectionPattern, ...] = (
     InjectionPattern(
         name="unicode_zero_width_obfuscation",
         pattern_type="UNICODE_OBFUSCATION",
-        regex=_compile(r"[\u200b-\u200f\u2060\ufeff]+"),
+        regex=_compile(
+            r"[\u200b-\u200f"      # ZWSP, ZWNJ, ZWJ, LRM, RLM
+            r"\u2028\u2029"        # LINE/PARAGRAPH SEPARATOR
+            r"\u202a-\u202e"       # LRE, RLE, PDF, LRO, RLO (bidi override)
+            r"\u2060"              # WORD JOINER
+            r"\u2066-\u2069"       # LRI, RLI, FSI, PDI (bidi isolates)
+            r"\ufeff]+"            # BOM / ZERO WIDTH NO-BREAK SPACE
+        ),
         severity_base=6,
         confidence_base=0.8,
         source_types=(SourceType.PROMPT, SourceType.MESSAGE, SourceType.TEMPLATE, SourceType.FILE, SourceType.CODE),
-        description="Invisible Unicode characters often used to split payloads or evade filters.",
+        description=(
+            "Invisible and bidi-control Unicode characters used to split payloads, "
+            "visually reverse text, or evade pattern filters. Covers: zero-width chars, "
+            "bidi overrides (LRO/RLO), bidi embeddings (LRE/RLE), bidi isolates (LRI/RLI/FSI/PDI), "
+            "line/paragraph separators, BOM."
+        ),
     ),
 )
 
