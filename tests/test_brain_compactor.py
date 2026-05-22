@@ -16,7 +16,7 @@ import pytest
 
 from alfa.guard.guardian.evidence_gate import EvidenceGate
 from alfa.guard.guardian.services.audit_store import AuditStore
-from alfa.guard.guardian.services.brain_compactor import BrainCompactor, CompactionReport
+from alfa.guard.guardian.brain.compactor import BrainCompactor, CompactionReport
 from alfa.guard.guardian.services.brain_linker import BrainLinker
 from alfa.guard.lasuch import InjectionDetector, LasuchGuardianAdapter, SourceType
 from alfa.memory.layer import MemoryLayer
